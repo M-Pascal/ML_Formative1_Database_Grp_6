@@ -6,7 +6,7 @@ This project involves designing and implementing a database system for breast ca
 ## Database Design and Implementation
 
 ### Entity Relationship Diagram (ERD)
-You can view the Entity Relationship Diagram (ERD) for the database schema here (attach your ERD image or link).
+You can view the Entity Relationship Diagram (ERD) for the database schema [here.](https://github.com/M-Pascal/ML_Formative1_Database_Grp_6/blob/main/ERD_diagram/ERD_diagram.jpg).
 
 ### Step 1: Running the SQL Schema
 To set up the MySQL database, run the `sqlSchema.sql` file. This will create the required tables and the database.
