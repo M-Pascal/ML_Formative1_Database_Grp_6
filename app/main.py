@@ -1,6 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from database import get_connection
+from .database import get_connection
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 
 app = FastAPI()
 
@@ -19,7 +23,9 @@ class Patient(BaseModel):
 def create_patient(patient: Patient):
     conn = get_connection()
     if not conn:
+        logging.error("Database connection error")
         raise HTTPException(status_code=500, detail="Database connection error")
+    
     cursor = conn.cursor()
     try:
         cursor.execute("INSERT INTO Patients (id, diagnosis) VALUES (%s, %s)", (patient.id, patient.diagnosis))
@@ -27,7 +33,8 @@ def create_patient(patient: Patient):
         return {"message": "Patient added successfully"}
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logging.error(f"Error inserting patient: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
     finally:
         cursor.close()
         conn.close()
@@ -37,13 +44,16 @@ def create_patient(patient: Patient):
 def read_patient(patient_id: str):
     conn = get_connection()
     if not conn:
+        logging.error("Database connection error")
         raise HTTPException(status_code=500, detail="Database connection error")
+    
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute("SELECT * FROM Patients WHERE id = %s", (patient_id,))
         patient = cursor.fetchone()
         if patient:
             return patient
+        logging.warning(f"Patient with ID {patient_id} not found")
         raise HTTPException(status_code=404, detail="Patient not found")
     finally:
         cursor.close()
@@ -54,12 +64,15 @@ def read_patient(patient_id: str):
 def update_patient(patient_id: str, patient: Patient):
     conn = get_connection()
     if not conn:
+        logging.error("Database connection error")
         raise HTTPException(status_code=500, detail="Database connection error")
+    
     cursor = conn.cursor()
     try:
         cursor.execute("UPDATE Patients SET diagnosis = %s WHERE id = %s", (patient.diagnosis, patient_id))
         conn.commit()
         if cursor.rowcount == 0:
+            logging.warning(f"Patient with ID {patient_id} not found")
             raise HTTPException(status_code=404, detail="Patient not found")
         return {"message": "Patient updated successfully"}
     finally:
@@ -71,12 +84,15 @@ def update_patient(patient_id: str, patient: Patient):
 def delete_patient(patient_id: str):
     conn = get_connection()
     if not conn:
+        logging.error("Database connection error")
         raise HTTPException(status_code=500, detail="Database connection error")
+    
     cursor = conn.cursor()
     try:
         cursor.execute("DELETE FROM Patients WHERE id = %s", (patient_id,))
         conn.commit()
         if cursor.rowcount == 0:
+            logging.warning(f"Patient with ID {patient_id} not found")
             raise HTTPException(status_code=404, detail="Patient not found")
         return {"message": "Patient deleted successfully"}
     finally:

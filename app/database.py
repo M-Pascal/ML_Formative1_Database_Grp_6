@@ -2,9 +2,13 @@ import os
 import mysql.connector
 from mysql.connector import Error
 from dotenv import load_dotenv
+import logging
 
 # Load environment variables
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 
 def get_connection():
     """Establish a database connection."""
@@ -19,5 +23,5 @@ def get_connection():
         )
         return conn
     except Error as e:
-        print(f"Database Connection Error: {e}")
+        logging.error(f"Database Connection Error: {e}")
         return None
